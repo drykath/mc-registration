@@ -1,0 +1,17 @@
+{% autoescape off %}Thank you so much for upgrading, {{ registration.first_name }}! We processed your registration upgrade for {{ convention.name }}.
+
+{% if registration.checked_in %}Since you've already received your badge, please proceed to registration so we can print up a new one for you!
+
+{% elif registration.needs_print == 2 %}Your old badge has already been printed, so we may need to print up a new one for you when you check in. Let us know you've upgraded, and we'll make sure you get the right one.
+
+{% endif %}The badge name {{ registration.badge_name }} will now be able to attend as a {{ registration.registration_level.title }}!{% if registration.external_id %} As before if you want to check the status of your registration, click the following link:
+
+https://{{ convention.site.domain }}{% url 'convention_confirm' registration.external_id %}{% endif %}
+{% if payment.payment_amount > 0 %}
+Your card been charged ${{ payment.payment_amount }} (charge ID for reference {{ payment.payment_extra }})
+{% else %}
+Due to the use of a coupon code, no card has been charged.
+{% endif %}
+Thanks, and if you have any questions, please let us know!{% endautoescape %}
+
+-- {{ convention.name }}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Registration report</title>
+        <style>
+            table {
+                border-collapse: collapse;
+            }
+            td {
+                border: 1px solid black;
+                padding: 0.3em;
+                vertical-align: top;
+            }
+            th, td {
+                text-align: left;
+            }
+            th.number, td.number {
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Motor City Furry Convention</h1>
+        <h2>Registration report</h2>
+        <h3>Generated {% now "DATETIME_FORMAT" %}</h3>
+
+        <p>Registrations included here are those created with coupon codes that will not appear on a Stripe transfer report.</p>
+
+        <table>
+            <tr>
+                <th>Name &amp; Address</th>
+                <th>Badge</th>
+                <th>Date</th>
+                <th>Level</th>
+                <th>Coupons Used</th>
+            </tr>
+        {% for registration in registrations %}
+            <tr>
+                <td>
+                    {{ registration.last_name }}, {{ registration.first_name }}
+                    <br>{{ registration.address }}, {{ registration.city }}, {{ registration.state }} {{ registration.postal_code }}
+                </td>
+                <td>{{ registration.badge_name }}</td>
+                {% with registration.payment_set.all|first as payment %}
+                <td>{{ payment.payment_received|date:"N d, Y f A" }}</td>
+                {% endwith %}
+                <td>{{ registration.registration_level.title }}</td>
+                <td>
+                    <ul>{% for couponuse in registration.couponuse_set.all %}
+                        <li>{{ couponuse.coupon }}</li>
+                    {% endfor %}</ul>
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </body>
+</html>

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load bootstrap3 %}
+
+    <div class="box">
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <h2 class="page-header">{% block meta_title %}On Site Registration{% endblock %}
+                    <small>Please fill in the following information</small>
+                </h2>
+            </div>
+        </div>
+        <form class="form-horizontal" role="form" enctype="multipart/form-data" action="{% url 'convention_registration' %}" method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-group">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% bootstrap_field form.first_name layout='horizontal' %}
+            {% bootstrap_field form.last_name layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info text-center" role="alert">
+                        <strong>This is your full, legal name, as it appears on your government-issued
+                            ID.</strong><br/>Please keep your ID out and ready; we'll need to see it
+                            in a moment!
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.badge_name layout='horizontal' %}
+            {% bootstrap_field form.email layout='horizontal' %}
+            {% bootstrap_field form.email_me layout='horizontal' %}
+            {% bootstrap_field form.address layout='horizontal' %}
+            {% bootstrap_field form.city layout='horizontal' %}
+            {% bootstrap_field form.state layout='horizontal' %}
+            {% bootstrap_field form.postal_code layout='horizontal' %}
+            {% bootstrap_field form.country layout='horizontal' %}
+            {% bootstrap_field form.registration_level layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info" role="alert">
+                        <center><a href="/reginfo/" class="alert-link" target="_blank">Find out more information for
+                            each
+                            Registration level,</a>.
+                        </center>
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.birthday layout='horizontal' %}
+            {% bootstrap_field form.payment_method layout='horizontal' %}
+            {% bootstrap_field form.shirt_size layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info" role="alert">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> T-Shirts are given as a
+                        "Thank You" gift to Sponsor Level Registrants and above, but we're asking all registrants their
+                        shirt size so we can estimate how many of each shirt size to have on hand at the Motor City
+                        Furry Con Store.
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.emergency_contact layout='horizontal' %}
+            {% bootstrap_field form.volunteer layout='horizontal' %}
+            {% bootstrap_field form.volunteer_phone layout='horizontal' %}
+            {% bootstrap_field form.tos layout='horizontal' %}
+            <button type="submit" class="btn btn-primary center-block" id="btn-continue">Continue</button>
+        </form>
+        <script type="text/javascript">
+            var tos = $('#id_tos');
+            var continueButton = $('#btn-continue');
+            $(function () {
+                continueButton.prop('disabled', !tos.prop('checked'));
+                tos.change(function () {
+                    continueButton.prop('disabled', !tos.prop('checked'));
+                });
+            });
+        </script>
+    </div>
+{% endblock %}

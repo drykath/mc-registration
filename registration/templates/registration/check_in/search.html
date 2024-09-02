@@ -1,0 +1,29 @@
+{% extends "registration/check_in/base.html" %}
+
+{% block ci_content %}
+    {% if registrations %}
+    <table class="table table-hover">
+        <tr><th>Badge Name</th><th>First Name</th><th>Last Name</th><th>Level</th><th>Reg Status</th><th>Badge ID</th><th>Check In</th></tr>
+        {% for reg in registrations %}
+            <tr class="clickable-row" data-href="{% url 'convention_check_in' reg.id %}">
+                <td>{{ reg.badge_name }}</td>
+                <td>{{ reg.first_name }}</td>
+                <td>{{ reg.last_name }}</td>
+                <td>{{ reg.registration_level.title }}</td>
+                <td>{{ reg.get_status_display }}
+                <td>{{ reg.badge_number }}</td>
+                <td><a href="{% url 'convention_check_in' reg.id %}">{% if reg.checked_in %}Already checked in!{% else %}Check In{% endif %}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <script type="text/javascript">
+    $(function () {
+        $(".clickable-row").click(function() {
+            window.location = $(this).data("href");
+        });
+    });
+    </script>
+    {% elif did_search %}
+    <p>No registrations found.</p>
+    {% endif %}
+{% endblock %}

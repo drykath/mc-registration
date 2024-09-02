@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="box">
+        <div class="row">
+            <div class="col-xs-8">
+                <h3>{% block meta_title %}Reg Badge Requests{% endblock %}</h3>
+            </div>
+            <div class="col-xs-4">
+                <div class="btn-group" style="margin-top: 15px;">
+                    <button type="button" class="btn btn-success" id="auto-refresh-button">Auto</button>
+                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="auto-refresh-dropdown">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" style="text-decoration: none;" id="refresh-1">1 Second</a></li>
+                        <li><a href="#" style="text-decoration: none;" id="refresh-2">2 Seconds</a></li>
+                        <li><a href="#" style="text-decoration: none;" id="refresh-5">5 Seconds</a></li>
+                        <li><a href="#" style="text-decoration: none;" id="refresh-10">10 Seconds</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!--<h4>Registrations in the "{{ queue }}" queue</h4>-->
+            <table class="table table-hover" id="badge_requests">
+                <tr><th>Badge Name</th><th>Level</th><th>Reg Status</th><th>Badge ID</th></tr>
+                {% for reg in queued_registrations %}
+                <tr class="clickable-row" data-id="{{ reg.id }}" data-href="{% url 'convention_badge_puller' reg.id %}">
+                        <td>{{ reg.badge_name }}</td>
+                        <td>{{ reg.registration_level.title }}</td>
+                        <td>{{ reg.get_status_display }}
+                        <td>{{ reg.badge_number }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <script type="text/javascript">
+            var auto_refresh_enabled = true;
+            var auto_refresh_interval = 1;
+            var auto_refresh_id = undefined;
+
+            function dequeue(reg) {
+                //window.location = "{% url 'convention_badge_puller' %}" + reg;
+                make_queue_request("{% url 'convention_badge_puller' %}" + reg);
+            }
+
+            function auto_refresh() {
+                if (auto_refresh_enabled) {
+                    make_queue_request("{% url 'convention_badge_puller' %}");
+                    auto_refresh_id = setTimeout(auto_refresh, auto_refresh_interval * 1000);
+                }
+            }
+            $( "#refresh-1,#refresh-2,#refresh-5,#refresh-10" ).on( "click", function() {
+                auto_refresh_interval = parseInt(this.id.substr(8));
+                if (auto_refresh_id) {
+                    clearTimeout(auto_refresh_id);
+                    auto_refresh_id = undefined;
+                }
+                if (auto_refresh_enabled) {
+                    auto_refresh_id = setTimeout(auto_refresh, auto_refresh_interval * 1000);
+                }
+
+            });
+            $( "#auto-refresh-button" ).on( "click", function() {
+                if (auto_refresh_enabled) {
+                    // Pause
+                    auto_refresh_enabled = false;
+                    if (auto_refresh_id) {
+                        clearTimeout(auto_refresh_id);
+                        auto_refresh_id = undefined;
+                    }
+                    document.getElementById("auto-refresh-button").className = "btn btn-warning";
+                    document.getElementById("auto-refresh-button").textContent = "Paused";
+                    document.getElementById("auto-refresh-dropdown").className = "btn btn-warning dropdown-toggle disabled";
+                }
+                else {
+                    // Unpause
+                    auto_refresh_enabled = true;
+                    auto_refresh_id = setTimeout(auto_refresh, auto_refresh_interval * 1000);
+                    document.getElementById("auto-refresh-button").className = "btn btn-success";
+                    document.getElementById("auto-refresh-button").textContent = "Auto";
+                    document.getElementById("auto-refresh-dropdown").className = "btn btn-success dropdown-toggle";
+                }
+            });
+
+            function make_queue_request(url) {
+                fetch(url, {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    if ('queued_registrations' in data) {
+                        queued_registrations = data['queued_registrations'];
+                        var oldrows = document.getElementsByClassName("clickable-row");
+                        for (var i = oldrows.length; i > 0; i--) {
+                            oldrows[i-1].remove();
+                        }
+                        var tbl_badge_requests = document.getElementById("badge_requests");
+                        for (var i = 0; i < queued_registrations.length; i++) {
+                            var newrow = tbl_badge_requests.insertRow(-1);
+                            var newcell;
+                            newcell = newrow.insertCell(0);
+                            newcell.appendChild(document.createTextNode(queued_registrations[i]['badge_name']));
+                            newcell = newrow.insertCell(1);
+                            newcell.appendChild(document.createTextNode(queued_registrations[i]['reg_level']));
+                            newcell = newrow.insertCell(2);
+                            newcell.appendChild(document.createTextNode(queued_registrations[i]['status']));
+                            newcell = newrow.insertCell(3);
+                            newcell.appendChild(document.createTextNode(queued_registrations[i]['badge_number']));
+                            newrow.dataset.id = queued_registrations[i]['id'];
+                            newrow.className = "clickable-row";
+                            $(newrow).click(function() {
+                                dequeue($(this).data("id"));
+                            });
+                        }
+                    }
+                });
+            }
+            $(function () {
+                $(".clickable-row").click(function() {
+                    //window.location = $(this).data("href");
+                    dequeue($(this).data("id"));
+                });
+                auto_refresh_id = setTimeout(auto_refresh, auto_refresh_interval * 1000);
+            });
+            </script>
+        </div>
+    </div>
+{% endblock %}

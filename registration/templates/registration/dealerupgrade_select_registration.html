@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load bootstrap3 %}
+{% load static %}
+
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Dealer Registration Upgrade{% endblock %}</h2>
+        </div>
+    </div>
+<form class="form-horizontal" role="form" action="{% url 'dealer_upgrade' external_id=external_id %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <div class="col-sm-3 col-sm-offset-2">
+            Confirmation code for dealer registration:
+        </div>
+        <div class="col-sm-4">
+            <input type="text" name="confirmation_code" id="id_confirmation_code" class="form-control" title="" placeholder="Registration confirmation code">
+        </div>
+    </div>
+    {% if registrations %}
+    <div class="form-group">
+        <div class="col-sm-8 col-sm-offset-2">
+            <center>Or select a registration to apply dealer table.</center>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-6 col-sm-offset-3 btn-group-vertical" data-toggle="buttons">
+            {% for registration in registrations %}
+                <label class="btn btn-primary{% if registration.dealer_registration_level %} disabled{% endif %}">
+                    <input type="radio" name="registration" id="{{ registration.id }}" value="{{ registration.id }}" class="form-control">{{ registration.badge_name }}{% if registration.dealer_registration_level %} - Already is a dealer registration{% endif %}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% buttons %}
+      <center>
+        <button type="submit" class="btn btn-primary">
+          Continue
+        </button>
+      </center>
+    {% endbuttons %}
+</form>
+</div>
+{% endblock %}

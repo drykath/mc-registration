@@ -1,0 +1,15 @@
+{% autoescape off %}Thanks for registering! We have your registration for {{ convention.name }}. Your confirmation number is {{ registration.external_id }}. Please save this email for your records.
+
+You're all set with the badge name {{ registration.badge_name }} at the {{ registration.registration_level.title }} level. You can check on your registration any time at the following link:
+
+https://{{ convention.site.domain }}{% url 'convention_confirm' registration.external_id %}
+
+As mentioned on the registration form, to pick up your badge you must present a government-issued photo ID stating your legal name: {{ registration.first_name }} {{ registration.last_name }}.
+{% if payment %}{% if payment.payment_amount > 0 %}
+Your card been charged ${{ payment.payment_amount }} (charge ID for reference {{ payment.payment_extra }})
+{% else %}
+Due to the use of a coupon code, your registration is covered at no cost and no card has been charged.
+{% endif %}{% endif %}
+If you have any questions, please let us know. See you in {{ convention.start_date|date:"F" }}!{% endautoescape %}
+
+-- {{ convention.name }}

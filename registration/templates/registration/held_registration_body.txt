@@ -1,0 +1,17 @@
+Hello,
+
+We've received this flagged registration, and have been asked to tell
+you about it:
+
+Registration ID: {{registration.id}}
+First Name: {{registration.first_name}}
+Last Name: {{registration.last_name}}
+Badge Name: {{registration.badge_name}}
+
+The notes associated with the registration holds are:
+{% for hold in holds %}
+{{ hold.notes_addition }}
+{% endfor %}
+
+There may be other reasons this registration was matched. Please check
+the registration database with the above details for more information.

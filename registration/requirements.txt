@@ -1,0 +1,4 @@
+mc-convention>=1.0
+Django>=1.11
+pillow
+qrcode

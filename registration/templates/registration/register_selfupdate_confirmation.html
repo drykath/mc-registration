@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Registration Update Confirmation{% endblock %}</h2>
+        </div>
+    </div>
+    <div class="col-sm-8 col-sm-offset-2">
+        <table class="table table-bordered table-condensed">
+            <colgroup>
+                <col class="col-xs-1">
+                <col class="col-xs-7">
+            </colgroup>
+
+            <tr class="{% cycle '' '' as rowcolors %}">
+                <td colspan="2">
+                    <div class="alert alert-info text-center" role="alert">
+                        This change will need to be confirmed before the registration is changed. 
+                        And email has been sent to the address on file for this registration.
+                        Please follow the instructions in that email.<br>
+                    </div>
+                </td>
+            </tr>
+            {% if newregistration.new_badge_name %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Old Badge Name:</nobr></th>
+                <td>{{ registration.badge_name }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>New Badge Name:</nobr></th>
+                <td>{{ newregistration.new_badge_name }}</td>
+            </tr>
+            {% else %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Badge Name:</nobr><br>(Unchanged)</th>
+                <td>{{ registration.badge_name }}</td>
+            </tr>
+            {% endif %}
+
+            {% if newregistration.avatar %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Old Badge Avatar:</nobr></th>
+                <td>
+                    {% if registration.avatar %}
+                    <img src="{% url 'avatar_thumbnail' 'e' registration.external_id 100 100 %}">
+                    {% else %}
+                    None on file for this registration
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>New Badge Avatar:</nobr></th>
+                <td>
+                    {% if newregistration.avatar %}
+                    <img src="{% url 'avatar_thumbnail' 'c' newregistration.id 100 100 %}">
+                    {% else %}
+                    Avatar will be removed
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Badge Avatar:</nobr><br>(Unchanged)</th>
+                <td>
+                    {% if registration.avatar %}
+                    <img src="{% url 'avatar_thumbnail' 'e' registration.external_id 100 100 %}">
+                    {% else %}
+                    None on file for this registration
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    <div class="col-sm-12" style="text-align: center;">
+        <p>
+            <a href="mailto:registration@motorcityfurrycon.org"
+               class="btn btn-primary">registration@motorcityfurrycon.org</a>
+        </p>
+        <p>Need anything else? Send us an email!</p>
+    </div>
+</div>
+{% endblock %}

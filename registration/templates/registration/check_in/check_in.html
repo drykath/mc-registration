@@ -1,0 +1,268 @@
+{% extends "registration/check_in/base.html" %}
+
+{% block ci_content %}
+    {% now "Y-m-d" as today %}
+    <div class="row">
+        <div class="col-xs-12">
+            <hr/>
+        </div>
+        <div class="col-xs-2">
+            {% if reg.avatar %}
+                <img src="{% url 'avatar_thumbnail' 'r' reg.id 200 200 %}" class="img-responsive">
+            {% endif %}
+        </div>
+        <div class="col-xs-10">
+            <div class="col-xs-12">
+                <div class="col-md-4 col-sm-6"><h4>{{ reg.badge_name }}</h4></div>
+                <div class="col-md-2 col-sm-4"><strong>{{ reg.registration_level.title }}</strong> Reg</div>
+                <div class="col-md-2 col-sm-4">Badge <strong>{{ reg.badge_number }}</strong></div>
+                {% if reg.checked_in %}
+                    <div class="col-md-2 col-sm-4 bg-warning text-center"><big>CHECKED IN</big></div>
+                {% else %}
+                    {% if reg.status == 1 %}
+                        <div class="col-md-2 col-sm-4 bg-success text-center"><big>PAID</big></div>
+                    {% elif reg.status == 0 %}
+                        <div class="col-md-2 col-sm-4 bg-danger text-center"><big>UNPAID</big></div>
+                    {% elif reg.status == 2 %}
+                        <div class="col-md-2 col-sm-4 bg-warning text-center"><big>PAYMENT PENDING</big></div>
+                    {% elif reg.status == 3 %}
+                        <div class="col-md-2 col-sm-4 bg-warning text-center"><big>REFUNDED</big></div>
+                    {% elif reg.status == 4 %}
+                        <div class="col-md-2 col-sm-4 bg-danger text-center"><big>REJECTED</big></div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="col-md-4"><h4>Reg Details:</h4>
+                {{ reg.last_name }}, {{ reg.first_name }}<br>
+                {{ reg.email }}
+            </div>
+            <div class="col-md-4"><strong>Address:</strong><br>
+                {{ reg.address }}<br>
+                {{ reg.city }}, {{ reg.state }} {{ reg.postal_code }}<br>
+                {{ reg.country }}
+            </div>
+            <div class="col-md-4">
+                <strong>Confirmation code:</strong><br>
+                {{ reg.external_id }}<br>
+                {% if reg.dealer_registration_level %}
+                    <strong>Dealer Tables:</strong><br>
+                    {{ reg.dealer_registration_level.number_tables }}<br>
+                {% endif %}
+                <strong>Shirt size:</strong><br>
+                {{ reg.shirt_size.size }}<br>
+                {% if reg.volunteer %}
+                    <strong>Volunteer</strong><br>
+                {% endif %}
+            </div>
+            {% if reg.notes %}
+                <div class="col-xs-12">
+                    <pre>{{ reg.notes }}</pre>
+                </div>
+            {% endif %}
+            {% if reg_lead and reg.private_notes %}
+                There are additional notes on this registration:
+                <div class="col-xs-12">
+                    <pre>{{ reg.private_notes }}</pre>
+                </div>
+            {% endif %}
+            <div class="col-sm-4">
+                <a href="{% url 'convention_check_in' reg.id 'print' %}" class="btn btn-primary" role="button"
+                   target="_blank"{% if not reg.status == 1 %} disabled{% endif %}>{% if reg.needs_print == 0 %}
+                    Re-print{% else %}Print{% endif %} Badge</a>
+                {% if not reg.status == 1 %}<br>Registration must be paid before badge can be printed.{% endif %}
+                {% if reg.needs_print == 2 %}<br>Registration has been upgraded. Discard old badge and print a new
+                    one.{% endif %}
+            </div>
+            <div class="col-sm-4"><a href="{% url 'convention_check_in' reg.id 'edit' %}"
+                                     class="btn btn-primary"
+                                     role="button"{% if reg.checked_in %} disabled{% endif %}>Edit Registration</a></div>
+            <div class="col-sm-4"><a href="{% url 'convention_check_in' reg.id 'upgrade' %}" class="btn btn-primary"
+                                     role="button"{% if reg.registration_level.upgrades.count == 0 or not reg.status == 1 %}
+                                     disabled{% endif %}>Upgrade</a></div>
+        </div>
+    </div>
+    <div class="row">
+        {# Not Paid, or Refunded but could pay again #}
+        {% if reg.status == 0 or reg.status == 3 %}
+            <form action="{% url 'convention_check_in' reg.id %}" method="POST">
+                {% csrf_token %}
+                <div class="col-xs-12">
+                    <hr>
+                    <h3>Take payment for registration:</h3>
+                </div>
+                <div class="col-sm-7">{{ form.registration_level }}</div>
+                <div class="col-sm-5">
+                    <button type="submit" class="btn btn-primary" id="btn-payment">
+                        Payment Accepted
+                    </button>
+                </div>
+            </form>
+        {% elif reg.status == 2 %}
+            <div class="alert alert-info text-center">
+                The payment for this registration is pending. Please give it a few moments and check back.
+            </div>
+        {% elif reg.status == 4 %}
+            <div class="alert alert-warning text-center">
+                This registration has been marked as rejected, and cannot be checked in or have payment applied.
+            </div>
+        {% elif reg.status == 1 and not reg.checked_in and reg.private_check_in and not reg_lead %}
+            <div class="col-xs-12">
+                <hr>
+                <div class="alert alert-warning text-center">
+                    Unable to process this registration. Please contact registration supervisor on duty for assistance.
+                </div>
+            </div>
+        {% elif reg.status == 1 and not reg.checked_in %}
+            <div class="col-xs-12">
+                <hr>
+                <div class="col-md-4">
+                    <label>
+                        Does the ID name match <strong>{{ reg.last_name }}, {{ reg.first_name }}</strong>?<br>
+                        <input accesskey="1" type="checkbox" id="confirm_name"{% if attempt_name and name_match %} checked{% endif %}>
+                        Yes
+                        {% if attempt_name and not name_match %}
+                            <br>Card was read as: <strong>{{ c_last }}, {{ c_first }}</strong>
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="col-md-4">
+                    <label>
+                        Does the ID birthday match <strong>{{ reg.birthday }}</strong>?<br>
+                        <input type="checkbox" accesskey="2"
+                               id="confirm_birthday"{% if attempt_birthday and birthday_match %} checked{% endif %}> Yes
+                        {% if attempt_birthday and not birthday_match %}
+                            <br>Card was read as: <strong>{{ c_birthday }}</strong> ({{ c_birthday|timesince }})
+                        {% endif %}
+                    </label>
+                </div>
+                <div class="col-md-4">
+                    <label>
+                        Does the photo on the ID match?<br>
+                        <input type="checkbox" id="confirm_photo" accesskey="3"> Yes
+                    </label>
+                </div>
+                {% if reg.private_check_in %}
+                <div class="col-xs-12 text-center">
+                Note: This registration requires a registration supervisor to check-in. Please see any notes above.
+                </div>
+                {% endif %}
+                <div class="col-xs-12 text-center">
+                    <form action="{% url 'convention_check_in' reg.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="set_check_in" value="1">
+                        <button type="submit" class="btn btn-primary" id="btn-checkin">
+                            Check In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% elif reg.status == 1 and reg.checked_in %}
+            <div class="col-xs-6">
+                <hr>
+                <div class="alert alert-success text-center">
+                    <strong>This registration is marked as Checked In</strong>
+                </div>
+                <div class="col-xs-12 text-center">
+                    <form action="{% url 'convention_check_in' reg.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="set_check_in" value="0">
+                        <button type="submit" class="btn btn-primary" id="btn-checkout">
+                            Undo Check In
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <hr>
+                {% if not owed_swag %}
+                    <div class="alert alert-success text-center">
+                        <strong>Received swag</strong>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        <strong>This registration may need swag pick-up</strong>
+                    </div>
+                {% endif %}
+                <div class="col-xs-12">
+                    <form action="{% url 'convention_check_in' reg.id %}" method="POST">
+                        {% csrf_token %}
+                        {% for swag_id, regswag in received_swag.items %}
+                            <div class="checkbox">
+                                <label><input id="received_{{ regswag.id }}" name="received_{{ regswag.id }}" type="checkbox" class="swag_received_checkbox" value="1"{% if regswag.received %} checked{% endif %}>{{ regswag.swag.description }}</label>
+                                {% if regswag.swag.sizes %}
+                                    <select class="form-control" style="display: inline-block; width: inherit;" name="size_{{ regswag.id }}">
+                                        {% for size in shirtsizes %}
+                                            <option value="{{ size.id }}"{% if regswag.size == size %} selected{% endif %}>{{ size.size }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                                <label id="backordered_{{ regswag.id }}_lbl"{% if regswag.received %} style="display: none;"{% endif %}><input id="backordered_{{ regswag.id }}" name="backordered_{{ regswag.id }}" type="checkbox" value="1"{% if regswag.backordered %} checked{% endif %}>(Backorder)</label>
+                                <input type="text" class="form-control" id="backorder_comment_{{ regswag.id }}" name="backorder_comment_{{ regswag.id }}" placeholder="Backorder Notes (Optional)" {% if regswag.received or not regswag.backordered %} style="display: none;"{% endif %} value="{{ regswag.backorder_comment|default:'' }}">
+                                <script>
+                                    $('#received_{{ regswag.id }}').click(function(){if (this.checked) {$('#backordered_{{ regswag.id }}_lbl').hide();$('#backorder_comment_{{ regswag.id }}').hide();} else {$('#backordered_{{ regswag.id }}_lbl').show();}});
+                                    $('#backordered_{{ regswag.id }}').click(function(){if (this.checked) {$('#backorder_comment_{{ regswag.id }}').show();} else {$('#backorder_comment_{{ regswag.id }}').hide();}});
+                                </script>
+                            </div>
+                        {% endfor %}
+                        {% for swag in owed_swag %}
+                            <div class="checkbox">
+                                <label><input id="new_received_{{ swag.id }}" name="new_received_{{ swag.id }}" type="checkbox" class="swag_received_checkbox" value="1">{{ swag.description }}</label>
+                                {% if swag.sizes %}
+                                    <select class="form-control" style="display: inline-block; width: inherit;" name="new_size_{{ swag.id }}">
+                                        {% for size in shirtsizes %}
+                                            <option value="{{ size.id }}"{% if reg.shirt_size_id == size.id %} selected{% endif %}>{{ size.size }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                                <label id="new_backordered_{{ swag.id }}_lbl"><input id="new_backordered_{{ swag.id }}" name="new_backordered_{{ swag.id }}" type="checkbox" value="1">(Backorder)</label>
+                                <input type="text" class="form-control" id="new_backorder_comment_{{ swag.id }}" name="new_backorder_comment_{{ swag.id }}" placeholder="Backorder Notes (Optional)" style="display: none;">
+                                <script>
+                                    $('#new_received_{{ swag.id }}').click(function(){if (this.checked) {$('#new_backordered_{{ swag.id }}_lbl').hide();$('#new_backorder_comment_{{ swag.id }}').hide();} else {$('#new_backordered_{{ swag.id }}_lbl').show();}});
+                                    $('#new_backordered_{{ swag.id }}').click(function(){if (this.checked) {$('#new_backorder_comment_{{ swag.id }}').show();} else {$('#new_backorder_comment_{{ swag.id }}').hide();}});
+                                </script>
+                            </div>
+                        {% endfor %}
+                        <input id="btn_swag_mark_all" class="btn btn-info" type="button" value="All">
+                        <input type="hidden" name="set_received_swag" value="1">
+                        <script>
+                            $('#btn_swag_mark_all').click(function(){$('.swag_received_checkbox').prop('checked', false).click();});
+                        </script>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary" id="btn-checkout">
+                                Save Swag Received
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        {% comment %}
+        <div class="col-xs-12">
+            <hr>
+            <div class="col-xs-12 text-center">
+                Line wrangler options
+                <form action="{% url 'convention_check_in' registration_id=reg.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="enqueue" value="1">
+                    <select class="form-control" style="display: inline-block; width: inherit;" name="queue_name">
+                        <option>regline</option>
+                        <option>badge-pull</option>
+                        {#<option>delivery</option>#}
+                    </select>
+                    <button type="submit" class="btn btn-primary" id="btn-enqueue">
+                        Add to queue
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endcomment %}
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('#btn-checkin').prop('disabled', !$('#confirm_name').prop('checked') || !$('#confirm_birthday').prop('checked') || !$('#confirm_photo').prop('checked'));
+            $('#confirm_name,#confirm_birthday,#confirm_photo).change(function () {
+                $('#btn-checkin').prop('disabled', !$('#confirm_name').prop('checked') || !$('#confirm_birthday').prop('checked') || !$('#confirm_photo').prop('checked'));
+            });
+        });
+    </script>
+{% endblock %}

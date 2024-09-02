@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dropzone.css' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/cropper.css' %}"></script>
+{% endblock %}
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/dropzone.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/cropper.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/register.js' %}"></script>
+{% endblock %}
+{% block content %}
+    {% load bootstrap3 %}
+
+    <div class="box">
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <h2 class="page-header">{% block meta_title %}Registration{% endblock %}
+                    <small>Please fill in the following information</small>
+                </h2>
+            </div>
+        </div>
+        <form class="form-horizontal" role="form" enctype="multipart/form-data" action="{% url 'convention_registration' %}" method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-group">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% bootstrap_field form.first_name layout='horizontal' %}
+            {% bootstrap_field form.last_name layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info text-center" role="alert">
+                        <strong>This is your full, legal name, as it appears on your government-issued
+                            ID.</strong><br/>If you use something else, we may be unable to find your registration.
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.badge_name layout='horizontal' %}
+            {% comment %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info text-center" role="alert">
+                        <strong>Please use only alphanumeric characters.</strong><br>Some special characters may not
+                        be printed.
+                    </div>
+                </div>
+            </div>
+            {% endcomment %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div id="avatar_old" class="col-sm-6">
+                    {% if avatar %}
+                        You already have this image uploaded, or you can upload a new one.<br>
+                        <img src="{% url 'avatar_thumbnail' 't' avatar.id 120 120 %}">
+                    {% else %}
+                        You can upload a character image to be included as an icon on your badge.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="id_avatar">Art Icon for Badge</label>
+                <div class="col-sm-6">
+                    <div class="row bootstrap3-multi-input">
+                        <div id="avatar_field" class="col-xs-12">
+                            <input class="" id="id_avatar" name="avatar" title="" type="file">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.email layout='horizontal' %}
+            {% bootstrap_field form.email_me layout='horizontal' %}
+            {% bootstrap_field form.address layout='horizontal' %}
+            {% bootstrap_field form.city layout='horizontal' %}
+            {% bootstrap_field form.state layout='horizontal' %}
+            {% bootstrap_field form.postal_code layout='horizontal' %}
+            {% bootstrap_field form.country layout='horizontal' %}
+            {% bootstrap_field form.registration_level layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info" role="alert">
+                        <center><a href="/reginfo/" class="alert-link" target="_blank">Find out more information for
+                            each
+                            Registration level,</a>.
+                        </center>
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.birthday layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    Remember, you must be at least 18 years old to attend.
+                </div>
+            </div>
+            {% bootstrap_field form.payment_method layout='horizontal' %}
+            {% bootstrap_field form.shirt_size layout='horizontal' %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-1"></div>
+                <div class="col-sm-6">
+                    <div class="alert alert-info" role="alert">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> T-Shirts are given as a
+                        "Thank You" gift to Sponsor Level Registrants and above, but we're asking all registrants their
+                        shirt size so we can estimate how many of each shirt size to have on hand at the Motor City
+                        Furry Con Store.
+                    </div>
+                </div>
+            </div>
+            {% bootstrap_field form.emergency_contact layout='horizontal' %}
+            {% bootstrap_field form.volunteer layout='horizontal' %}
+            {% bootstrap_field form.volunteer_phone layout='horizontal' %}
+            {% bootstrap_field form.coupon_code layout='horizontal' %}
+            {% bootstrap_field form.tos layout='horizontal' %}
+            <button type="submit" class="btn btn-primary center-block" id="btn-continue">Continue</button>
+        </form>
+        <div id="droptpl" style="display: none;">
+            <div class="dz-preview dz-file-preview">
+              <div class="dz-image"><img data-dz-thumbnail /></div>
+              <div class="mc-dz-crop"><button type="button" class="btn btn-primary">Crop</button><br>or drop a new image<br>to replace</div>
+              <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+              <div class="dz-error-message"><span data-dz-errormessage></span></div>
+              <div class="dz-success-mark">
+                <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                  <title>Check</title>
+                  <defs></defs>
+                  <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+                    <path d="M23.5,31.8431458 L17.5852419,25.9283877 C16.0248253,24.3679711 13.4910294,24.366835 11.9289322,25.9289322 C10.3700136,27.4878508 10.3665912,30.0234455 11.9283877,31.5852419 L20.4147581,40.0716123 C20.5133999,40.1702541 20.6159315,40.2626649 20.7218615,40.3488435 C22.2835669,41.8725651 24.794234,41.8626202 26.3461564,40.3106978 L43.3106978,23.3461564 C44.8771021,21.7797521 44.8758057,19.2483887 43.3137085,17.6862915 C41.7547899,16.1273729 39.2176035,16.1255422 37.6538436,17.6893022 L23.5,31.8431458 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z" id="Oval-2" stroke-opacity="0.198794158" stroke="#747474" fill-opacity="0.816519475" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="dz-error-mark">
+                <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                  <title>Error</title>
+                  <defs></defs>
+                  <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+                    <g id="Check-+-Oval-2" sketch:type="MSLayerGroup" stroke="#747474" stroke-opacity="0.198794158" fill="#FFFFFF" fill-opacity="0.816519475">
+                      <path d="M32.6568542,29 L38.3106978,23.3461564 C39.8771021,21.7797521 39.8758057,19.2483887 38.3137085,17.6862915 C36.7547899,16.1273729 34.2176035,16.1255422 32.6538436,17.6893022 L27,23.3431458 L21.3461564,17.6893022 C19.7823965,16.1255422 17.2452101,16.1273729 15.6862915,17.6862915 C14.1241943,19.2483887 14.1228979,21.7797521 15.6893022,23.3461564 L21.3431458,29 L15.6893022,34.6538436 C14.1228979,36.2202479 14.1241943,38.7516113 15.6862915,40.3137085 C17.2452101,41.8726271 19.7823965,41.8744578 21.3461564,40.3106978 L27,34.6568542 L32.6538436,40.3106978 C34.2176035,41.8744578 36.7547899,41.8726271 38.3137085,40.3137085 C39.8758057,38.7516113 39.8771021,36.2202479 38.3106978,34.6538436 L32.6568542,29 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z" id="Oval-2" sketch:type="MSShapeGroup"></path>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+            </div>
+        </div>
+        <div class="modal fade" id="crop_modal" role="dialog" aria-labelledby="modalLabel" tabindex="-1">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalLabel">Crop Badge Avatar</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="img-container">
+                            <img id="crop_image" src="" alt="Avatar" style="display: none;">
+                            <img id="crop_spinner" src="{% static 'images/spinner.gif' %}" alt="AvatarSpinner">
+                        </div>
+                        <input type="checkbox" id="crop_square" checked="checked"><label for="crop_square">Keep square for best results</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="crop_save" type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

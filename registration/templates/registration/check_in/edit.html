@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+{% load static %}
+
+{% block content %}
+    <div class="box">
+    <div class="row">
+        <div class="col-sm-12">
+            <h3>{% block meta_title %}Registration Check-In: Edit {{ reg.badge_name }}{% endblock %}</h3>
+        </div>
+    </div>
+
+    <form class="form-horizontal" role="form" enctype="multipart/form-data"
+          action="{% url 'convention_check_in' reg.id 'edit' %}" method="POST">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% bootstrap_field form.first_name layout='horizontal' %}
+        {% bootstrap_field form.last_name layout='horizontal' %}
+        {% bootstrap_field form.badge_name layout='horizontal' %}
+        {% bootstrap_field form.email layout='horizontal' %}
+        {% bootstrap_field form.address layout='horizontal' %}
+        {% bootstrap_field form.city layout='horizontal' %}
+        {% bootstrap_field form.state layout='horizontal' %}
+        {% bootstrap_field form.postal_code layout='horizontal' %}
+        {% bootstrap_field form.country layout='horizontal' %}
+        {% bootstrap_field form.registration_level layout='horizontal' %}
+        {% bootstrap_field form.dealer_registration_level layout='horizontal' %}
+        {% bootstrap_field form.birthday layout='horizontal' %}
+        {% bootstrap_field form.shirt_size layout='horizontal' %}
+        {% bootstrap_field form.emergency_contact layout='horizontal' %}
+        {% bootstrap_field form.volunteer layout='horizontal' %}
+        {% bootstrap_field form.volunteer_phone layout='horizontal' %}
+        {% bootstrap_field form.notes layout='horizontal' %}
+        {% buttons %}
+            <center>
+                <button type="submit" class="btn btn-primary" id="btn-continue">
+                    Save
+                </button>
+            </center>
+        {% endbuttons %}
+    </form>
+    </div>
+{% endblock %}

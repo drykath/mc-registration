@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load bootstrap3 %}
+{% load static %}
+
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Registration Upgrade{% endblock %}</h2>
+        </div>
+    </div>
+<form class="form-horizontal" role="form" action="{% url 'convention_upgrade' external_id=external_id %}" method="post">
+    {% if registrations %}
+    {% csrf_token %}
+    <div class="form-group">
+        <div class="col-sm-8 col-sm-offset-2">
+            <center>Select a registration to upgrade.</center>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-6 col-sm-offset-3 btn-group-vertical" data-toggle="buttons">
+            {% for registration in registrations %}
+                <label class="btn btn-primary{% if registration.registration_level.upgrades.count == 0 %} disabled{% endif %}">
+                    <input type="radio" name="registration" id="{{ registration.id }}" value="{{ registration.id }}" class="form-control">{{ registration.badge_name }} [{{ registration.registration_level.title }}]{% if registration.registration_level.upgrades.count == 0 %} - No upgrades available{% endif %}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% buttons %}
+      <center>
+        <button type="submit" class="btn btn-primary">
+          Continue
+        </button>
+      </center>
+    {% endbuttons %}
+    {% else %}
+    <div class="form-group">
+      <div class="col-sm-8 col-sm-offset-2">
+        <div class="alert alert-danger">
+          You have no registrations for the current year. <a href="{% url 'convention_registration' %}">Please register for your desired registration level</a>.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+</form>
+</div>
+{% endblock %}

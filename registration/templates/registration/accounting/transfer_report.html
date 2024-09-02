@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Transfer report for {{ transfer.created|date:"N d, Y" }}</title>
+        <style>
+            table {
+                border-collapse: collapse;
+            }
+            td {
+                border: 1px solid black;
+                padding: 0.3em;
+                vertical-align: top;
+            }
+            th, td {
+                text-align: left;
+            }
+            th.number, td.number {
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Motor City Furry Convention</h1>
+        <h2>Transfer report for {{ transfer.created|date:"N d, Y" }}</h2>
+        <h3>Generated {% now "DATETIME_FORMAT" %}</h3>
+
+        <h1>Amount: ${{ transfer.amount|floatformat:2 }}</h1>
+        <p>Stripe has marked this transfer complete as of {{ transfer.date|date:"N d, Y f A" }}. For reference the ID of this transfer is "{{ transfer.id }}" and it now has the status "{{ transfer.status }}".</p>
+
+        <p>Totals included in this report:</p>
+        <table>
+            <tr>
+                <th>Type/Level</th>
+                <th>Total</th>
+            </tr>
+        {% for type, total in totals.items %}
+            <tr>
+                <td>{{ type }}</td>
+                <td>{{ total }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+
+        <p>Transactions associated with this transfer:</p>
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th class="number">Gross</th>
+                <th class="number">Fee</th>
+                <th class="number">Total</th>
+            </tr>
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.type }}</td>
+                <td>
+                    {{ transaction.description }}
+                    {% if transaction.Payments %}
+                        <br><strong>Associated registration entry:</strong>
+                        {% for payment in transaction.Payments %}
+                            <br>{{ payment.registration.last_name }}, {{ payment.registration.first_name }} ({{ payment.registration.badge_name }})
+                            <br>{{ payment.registration.address }}, {{ payment.registration.city }}, {{ payment.registration.state }} {{ payment.registration.postal_code }}
+                            {% if payment.registration.couponuse_set.all %}<br><strong>Coupons used:</strong>
+                                <ul>{% for couponuse in payment.registration.couponuse_set.all %}
+                                    <li>{{ couponuse.coupon }}</li>
+                                {% endfor %}</ul>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>{{ transaction.created|date:"N d, Y f A" }}</td>
+                <td class="number">${{ transaction.amount|floatformat:2 }}</td>
+                <td class="number">${{ transaction.fee|floatformat:2 }}</td>
+                <td class="number">${{ transaction.net|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </body>
+</html>

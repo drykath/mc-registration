@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Dealer Registration Upgrade{% endblock %} <small>Please verify the following information is correct</small></h2>
+        </div>
+    </div>
+<form class="form-horizontal" action="{% url 'dealer_upgrade' external_id=external_id %}" method="post" role="form">
+    {% csrf_token %}
+    <input type="hidden" name="registration" value="{{ selected_registration.id }}" />
+    <input type="hidden" name="upgrade" value="{{ upgrade.id }}" />
+    <input type="hidden" name="payment_method" value="{{ method.id }}" />
+    <input type="hidden" name="coupon_code" value="{{ coupon.code }}" />
+    <input type="hidden" name="tos" value="on" />
+    <input type="hidden" name="confirm" value="1" />
+    <div class="col-sm-8 col-sm-offset-2">
+        <table class="table table-bordered table-condensed">
+            <colgroup>
+                <col class="col-xs-1">
+                <col class="col-xs-7">
+            </colgroup>
+            <tr class="{% cycle '' '' as rowcolors %}">
+                <th>Legal Name:</th>
+                <td>{{ selected_registration.name }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th>Badge Name:</th>
+                <td>{{ selected_registration.badge_name }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th>Current Registration Level:</th>
+                <td>{{ selected_registration.registration_level.title }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th>Added Dealer Tables:</th>
+                <td>{{ dealer_registration_level.title }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th>Payment Method:</th>
+                <td>{{ method.name }}</td>
+            </tr>
+            <tr class="{% cycle rowcolors %}">
+                <th>Total Amount:</th>
+                <td>{{ amount|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-8 col-sm-offset-2">
+        <center><div class="alert alert-info" role="alert">Just a reminder, by submitting this registration form you agree to our <a href="/tos/" target="_blank">Terms and Conditions</a>.</div>
+        <a class="btn btn-danger" href="javascript:history.back()" role="button">Edit Registration Form</a>
+        {% if method.is_credit %}
+            <!-- TODO: Payment processor link/code -->
+        {% else %}
+            <button type="submit" name="submit" class="btn btn-info">Submit Registration</button>
+        {% endif %}
+            </center>
+    </div>
+</form>
+</div>
+{% endblock %}

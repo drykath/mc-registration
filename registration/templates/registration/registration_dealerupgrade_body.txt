@@ -1,0 +1,10 @@
+{% autoescape off %}Thank you so much for paying for your table(s), {{ registration.first_name }}! We processed your dealer upgrade for {{ convention.name }}.
+
+{% if payment.payment_amount > 0 %}
+Your card been charged ${{ payment.payment_amount }} (charge ID for reference {{ payment.payment_extra }})
+{% else %}
+Due to the use of a coupon code, no card has been charged.
+{% endif %}
+Thanks, and if you have any questions, please let us know!{% endautoescape %}
+
+-- {{ convention.name }}

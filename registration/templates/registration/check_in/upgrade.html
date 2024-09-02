@@ -1,0 +1,51 @@
+{% extends "registration/check_in/base.html" %}
+
+{% block ci_content %}
+<div class="row">
+    <div class="col-xs-12">
+        <hr />
+    </div>
+    <div class="col-xs-2">
+        {% if reg.avatar %}
+            <img src="{% url 'avatar_thumbnail' 'r' reg.id 200 200 %}" class="img-responsive">
+        {% endif %}
+    </div>
+    <div class="col-xs-10">
+        <div class="col-xs-12">
+            <div class="col-md-4 col-sm-6"><h4>{{ reg.badge_name }}</h4></div>
+            <div class="col-md-2 col-sm-4"><strong>{{ reg.registration_level.title }}</strong> Reg</div>
+            <div class="col-md-2 col-sm-4">Badge <strong>{{ reg.badge_number }}</strong></div>
+            {% if reg.checked_in %}
+                <div class="col-md-2 col-sm-4 bg-warning text-center"><big>CHECKED IN</big></div>
+            {% else %}
+                {% if reg.status == 1 %}
+                    <div class="col-md-2 col-sm-4 bg-success text-center"><big>PAID</big></div>
+                {% elif reg.status == 0 %}
+                    <div class="col-md-2 col-sm-4 bg-danger text-center"><big>UNPAID</big></div>
+                {% elif reg.status == 2 %}
+                    <div class="col-md-2 col-sm-4 bg-warning text-center"><big>PAYMENT PENDING</big></div>
+                {% elif reg.status == 3 %}
+                    <div class="col-md-2 col-sm-4 bg-warning text-center"><big>REFUNDED</big></div>
+                {% elif reg.status == 4 %}
+                    <div class="col-md-2 col-sm-4 bg-danger text-center"><big>REJECTED</big></div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% if reg.status == 1 %}
+            <form action="{% url 'convention_check_in' reg.id 'upgrade' %}" method="POST">
+                {% csrf_token %}
+                <div class="col-xs-12">
+                    <hr>
+                    <h3>Take payment for upgrade:</h3>
+                </div>
+                <div class="col-sm-7">{{ form.registration_level }}</div>
+                <div class="col-sm-5">
+                    <button type="submit" class="btn btn-primary" id="btn-payment">
+                        Payment Accepted
+                    </button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

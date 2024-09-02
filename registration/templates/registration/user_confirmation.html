@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Registration Confirmation{% endblock %} <small>This is the information we have on file.</small></h2>
+        </div>
+    </div>
+    <div class="col-sm-8 col-sm-offset-2">
+        <table class="table table-bordered table-condensed">
+            <colgroup>
+                <col class="col-xs-1">
+                <col class="col-xs-7">
+            </colgroup>
+            <tr class="{% cycle '' '' as rowcolors %}">
+                <th><nobr>Legal Name:</nobr></th>
+                <td>{{ registration.name }}</td>
+            </tr>
+
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Badge Name:</nobr></th>
+                <td>{{ registration.badge_name }}</td>
+            </tr>
+
+            {% if registration.avatar %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Badge Avatar:</nobr></th>
+                <td><img src="{% url 'avatar_thumbnail' 'e' registration.external_id 100 100 %}"></td>
+            </tr>
+            {% endif %}
+
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Reg Level:</nobr></th>
+                <td>
+                    <p>{{ registration.registration_level.title }}</p>
+                    {% if upgrade_available %}
+                        <a class="btn btn-info" href="{% url 'convention_upgrade' external_id=registration.external_id %}">Upgrade My Registration</a>
+                    {% else %}
+                        <a class="btn btn-info" disabled>No Upgrade Available</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>Status:</nobr></th>
+                <td>
+                    {% if registration.needs_print == 1 and not registration.checked_in and not registration.private_check_in %}
+                        <p>You can now change your badge name or upload a new avatar image.<br>Legal name cannot be updated online at this time.</p>
+                        <a class="btn btn-info" href="{% url 'convention_confirm_change' external_id=registration.external_id %}">Change Badge Name or Avatar</a>
+                    {% else %}
+                        Your badge has already been printed, so unfortunately no changes are available at this time.
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% if not registration.user and user.is_authenticated %}
+            <tr class="{% cycle rowcolors %}">
+                <th><nobr>User:</nobr></th>
+                <td>
+                    <p>This registration was entered while not logged in.
+                    {% if user.registration_set.count == 0 %}That may be why you see "Not yet registered" above.{% endif %}<br>
+                    If this is your registration, you may "claim" it to associate it with your account.</p>
+                    <a class="btn btn-info" href="{% url 'convention_confirm_claim' external_id=registration.external_id %}">Claim This Registration</a>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% if false and not registration.checked_in %}{# Hidden, kept for reference #}
+            <tr class="{% cycle rowcolors %}">
+                {% now "Y-m-d" as today %}
+                {% now "H" as hour %}
+                <th>Badge Available:</th>
+                <td>{% if today < "2019-04-08" %}
+                        {% if registration.needs_print == 1 %}Should be {% elif registration.needs_print == 2 %}Upgraded badge should be {% endif %}Available for Thursday pre-reg pick up
+                    {% elif today < "2019-04-12" %}
+                        {% if registration.needs_print == 1 %}Available Friday{% elif registration.needs_print == 2 %}Your original badge is available for Thursday pick up, but please return Friday, once the printers are ready, to get your upgraded badge{% else %}Available for Thursday pre-reg pick up{% endif %}
+                    {% elif today == "2019-04-12" %}
+                        {% if hour < "20" %}
+                            {% if registration.needs_print == 1 %}Available in the on-site registration line{% elif registration.needs_print == 2 %}Upgrade badge available in the on-site registration line{% else %}Available in the pre-reg pick up line{% endif %}
+                        {% else %}
+                            {#{% if registration.needs_print == 1 %}Available Saturday{% elif registration.needs_print == 2 %}Your original badge may be available in con operations, but please return to registration on Saturday to get your upgraded badge{% else %}Available in con operations{% endif %}#}
+                            Available Saturday
+                        {% endif %}
+                    {% elif today == "2019-04-13" %}
+                        {% if hour < "20" %}
+                            {% if registration.needs_print == 1 %}Available in the on-site registration line{% elif registration.needs_print == 2 %}Upgrade badge available in the on-site registration line{% else %}Available in the pre-reg pick up line{% endif %}
+                        {% else %}
+                            {#{% if registration.needs_print == 1 %}Available Sunday{% elif registration.needs_print == 2 %}Your original badge may be available in con operations, but please return to registration on Sunday to get your upgraded badge{% else %}Available in con operations{% endif %}#}
+                            Available Sunday
+                        {% endif %}
+                    {% elif today == "2019-04-14" %}
+                        {% if hour < "16" %}
+                            {% if registration.needs_print == 1 %}Available in the on-site registration line{% elif registration.needs_print == 2 %}Upgrade badge available in the on-site registration line{% else %}Available in the pre-reg pick up line{% endif %}
+                        {% else %}
+                            Sorry :(
+                        {% endif %}
+                    {% endif %}
+                    {% if registration.needs_print == 0 %}
+                        <br>
+                        Since your badge has already been printed, changes to your badge name or icon are not possible at this time.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    <div class="col-sm-12" style="text-align: center;">
+        <p>
+            <a href="mailto:registration@motorcityfurrycon.org"
+               class="btn btn-primary">registration@motorcityfurrycon.org</a>
+        </p>
+        <p>Need anything else? Send us an email!</p>
+    </div>
+</div>
+{% endblock %}

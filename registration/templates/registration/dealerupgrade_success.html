@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Dealer Registration Upgrade{% endblock %} <small>Successfully upgraded!</small></h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <center>Thank you for attaching your dealer registration! You're now paid up for: {{ dealer_registration_level.title }} table(s)!<br />
+            We look forward to seeing you in the Dealers Den!</center>
+        </div>
+    </div>
+</div>
+{% endblock %}

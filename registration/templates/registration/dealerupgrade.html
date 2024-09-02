@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load bootstrap3 %}
+    {% load static %}
+
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Dealer Registration Upgrade{% endblock %}</h2>
+        </div>
+    </div>
+    <form class="form-horizontal" role="form" action="{% url 'dealer_upgrade' external_id=external_id %}"
+          method="post">
+        {% csrf_token %}
+        <input type="hidden" name="registration" value="{{ selected_registration.id }}"/>
+        {% if form.non_field_errors %}
+            <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <div class="col-sm-6 col-sm-offset-3">
+                <strong>
+                    Upgrading registration with dealer tables:<br>{{ selected_registration.badge_name }} [{{ selected_registration.registration_level.title }}].
+                </strong>
+            </div>
+        </div>
+        {% if selected_registration.dealer_registration_level %}
+            <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <div class="alert alert-danger">
+                        This registration already has dealer tables assigned.
+                    </div>
+                </div>
+            </div>
+        {% else %}
+
+        {% bootstrap_field form.payment_method layout='horizontal' %}
+        {% bootstrap_field form.coupon_code layout='horizontal' %}
+        {% bootstrap_field form.tos layout='horizontal' %}
+
+        {% buttons %}
+            <center>
+                <button type="submit" class="btn btn-primary" id="btn-continue">
+                    Continue
+                </button>
+            </center>
+        {% endbuttons %}
+
+        {% endif %}
+    </form>
+    <script type="text/javascript">
+        $(function () {
+            $('#btn-continue').prop('disabled', !$('#id_tos').prop('checked'));
+            $('#id_tos').change(function () {
+                $('#btn-continue').prop('disabled', !$('#id_tos').prop('checked'));
+            });
+        });
+    </script>
+</div>
+{% endblock %}

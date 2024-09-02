@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container box">
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <h2 class="page-header">{% block meta_title %}Registration Upgrade{% endblock %} <small>Successfully upgraded!</small></h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <center>Thank you for upgrading! You're now a {{ upgrade.upgrade_registration_level.title }}!<br />
+            {% if registration.checked_in %}
+                <br />Since you've already received your badge, please head over to registration so we can print up a new one for you!<br /><br />
+            {% elif registration.needs_print == 2 %}
+                <br />Your old badge has already been printed, so we may need to print up a new one for you when you check in. Let us know you've upgraded, and we'll make sure you get the right one.<br /><br />
+            {% endif %}
+            We look forward to seeing you!</center>
+        </div>
+    </div>
+</div>
+{% endblock %}

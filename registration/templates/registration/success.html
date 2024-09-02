@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container box">
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <h2 class="page-header">{% block meta_title %}Registration{% endblock %} <small>Successfully registered!</small></h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <p><center>Thank you for your contribution! You've successfully registered for this year's convention!<br />
+                We look forward to seeing you!</center></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <p><center>You should be receiving a confirmation email with the details of your
+                    registration. But just in case, your confirmation code is
+                    <strong>{{ registration.external_id }}</strong>. You can check back on your
+                    registration later on at the link:<br />
+                    <a href="{% url 'convention_confirm' registration.external_id %}">
+                        https://{{ convention.site.domain }}{% url 'convention_confirm' registration.external_id %}
+                    </a></center></p>
+            </div>
+        </div>
+        {% if registration.volunteer %}
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+                    <center>
+                        <strong>And an extra thank you for your desire to become a volunteer!</strong><br />
+                        Please see the <a href="/volunteer/">Volunteering page</a> for the current information on how you can help us out!
+                    </center>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

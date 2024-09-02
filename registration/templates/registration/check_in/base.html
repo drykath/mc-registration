@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="box">
+        <div class="row">
+            <div class="col-sm-12">
+                <h3>{% block meta_title %}Registration Check-In{% endblock %}</h3>
+            </div>
+        </div>
+        <div class="row">
+            <form class="form-horizontal" role="form" action="{% url "convention_check_in" %}" method="post">
+                {% csrf_token %}
+                <label class="col-sm-3 control-label" for="id_search">Search:</label>
+                <div class="col-sm-6">
+                    <input class="form-control" id="id_search" name="search" placeholder="Name/Email/Confirmation Code"
+                           type="text" value="{{ search }}"{% if search_disabled %} disabled{% endif %}>
+                </div>
+
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-primary" id="btn-continue"{% if search_disabled %}
+                            disabled{% endif %}>
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        <br>
+
+        {% block ci_content %}{% endblock %}
+
+        <div class="row">
+            {% if queued_registrations %}
+            <h4>Registrations in the "{{ queue }}" queue</h4>
+            <table class="table table-hover">
+                <tr><th>Badge Name</th><th>First Name</th><th>Last Name</th><th>Level</th><th>Reg Status</th><th>Badge ID</th><th>Check In</th></tr>
+                {% for reg in queued_registrations %}
+                    <tr class="clickable-row" data-href="{% url 'convention_check_in' reg.id %}">
+                        <td>{{ reg.badge_name }}</td>
+                        <td>{{ reg.first_name }}</td>
+                        <td>{{ reg.last_name }}</td>
+                        <td>{{ reg.registration_level.title }}</td>
+                        <td>{{ reg.get_status_display }}
+                        <td>{{ reg.badge_number }}</td>
+                        <td><a href="{% url 'convention_check_in' reg.id %}">{% if reg.checked_in %}Already checked in!{% else %}Check In{% endif %}</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <script type="text/javascript">
+            $(function () {
+                $(".clickable-row").click(function() {
+                    window.location = $(this).data("href");
+                });
+            });
+            </script>
+            {% endif %}
+        </div>
+
+        {% if settings.regci_swag_stats %}
+            <div class="row">
+                {% for swag in swag_stats %}
+                <div class="col-sm-3">
+                    {{ swag.description }}: {{ swag.received }} / {{ swag.needed }}
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="{{ swag.percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ swag.percent }}%;">
+                            {{ swag.percent }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-xs-12">
+                <hr/>
+                <h3>Settings</h3>
+            </div>
+            <div class="col-sm-6">
+                {% if settings.regci_auto_request %}
+                    <a role="button" class="btn btn-success" id="auto-request-button" href="{% url 'convention_check_in' '' 'regciautorequest' %}">Auto Request Badge: On</a>
+                {% else %}
+                    <a role="button" class="btn btn-info" id="auto-request-button" href="{% url 'convention_check_in' '' 'regciautorequest' %}">Auto Request Badge: Off</a>
+                {% endif %}
+            </div>
+            <div class="col-sm-6">
+                {% if settings.regci_swag_stats %}
+                    <a role="button" class="btn btn-success" id="swag-stats-button" href="{% url 'convention_check_in' '' 'regciswagstats' %}">Show Swag Stats: On</a>
+                {% else %}
+                    <a role="button" class="btn btn-info" id="swag-stats-button" href="{% url 'convention_check_in' '' 'regciswagstats' %}">Show Swag Stats: Off</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <form id="cardswipe-form" class="form-horizontal" role="form" action="{% url "convention_check_in" %}"
+              method="post">
+            {% csrf_token %}
+            <input type="hidden" id="cardswipe-last" name="c_last">
+            <input type="hidden" id="cardswipe-first" name="c_first">
+            <input type="hidden" id="cardswipe-birthday" name="c_birthday">
+        </form>
+        <script type="text/javascript" src="{% static "js/jquery.cardswipe.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/aamva.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/cardswipe.aamva.js" %}"></script>
+      <script type="text/javascript">
+            // Called on a successful scan
+            var complete = function (data) {
+                // Throw away non-AAMVA reads
+                if (data.type === "generic")
+                    return;
+                // Fill in the parsed values
+                $("#cardswipe-last").val(data.lastName);
+                $("#cardswipe-first").val(data.firstName);
+                $("#cardswipe-birthday").val(data.birthday);
+                $("#cardswipe-form").submit()
+            };
+            $.cardswipe({
+                success: complete,
+                parsers: [aamvaParser],
+                debug: false
+            });
+      </script>
+    </div>
+{% endblock %}
