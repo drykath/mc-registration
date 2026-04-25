@@ -78,7 +78,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
         if db_field.name == 'registration_level':
             convention = self.get_convention_from_request(request)
             if convention:
-                kwargs['queryset'] = RegistrationLevel.objects.filter(convention=convention)
+                kwargs['queryset'] = models.RegistrationLevel.objects.filter(convention=convention)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_urls(self):
@@ -137,7 +137,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
             if id.checked_in:
                 self.message_user(request, 'Cannot refund checked-in reg %s' % (id))
                 continue
-            payments = Payment.objects.filter(registration=id)
+            payments = models.Payment.objects.filter(registration=id)
             for payment in payments:
                 if (payment.payment_method.is_credit and payment.payment_extra):
                     if payment.payment_state == 1:
@@ -163,7 +163,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
 
     def undo_refund_payment(self, request, queryset):
         for id in queryset:
-            payments = Payment.objects.filter(registration=id)
+            payments = models.Payment.objects.filter(registration=id)
             for payment in payments:
                 if (payment.payment_method.is_credit and payment.payment_extra):
                     if payment.payment_state == 2:
@@ -214,7 +214,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
             transaction.set_autocommit(ac)
 
     def print_badge_list(self, request):
-        badges = Registration.objects.filter(checked_in=False).order_by('last_name', 'first_name')
+        badges = models.Registration.objects.filter(checked_in=False).order_by('last_name', 'first_name')
         split_badges = []
         temp_list = []
         for badge in badges:
@@ -235,7 +235,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
             if reg.staffregistration_set.count() > 0:
                 self.message_user(request, '{} already linked to Staff Registration'.format(reg), messages.WARNING)
                 continue
-            sr = StaffRegistration.objects.create(
+            sr = models.StaffRegistration.objects.create(
                 convention=reg.registration_level.convention,
                 registration=reg,
             )
@@ -247,11 +247,11 @@ class RegistrationAdmin(RegistrationModelAdmin):
     def download_registration_detail(self, request, queryset):
         registration_list = []
         for badge in queryset:
-            payments = Payment.objects.filter(registration=badge)
+            payments = models.Payment.objects.filter(registration=badge)
             for payment in payments:
                 discount_amount = ''
                 try:
-                    coupon = CouponUse.objects.get(registration=badge)
+                    coupon = models.CouponUse.objects.get(registration=badge)
                     if coupon.coupon.percent:
                         discount_amount = '%.02f' % ((coupon.coupon.discount / 100) * badge.registration_level.price)
                     else:
@@ -279,7 +279,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
         if not payments:
             discount_amount = ''
             try:
-                coupon = CouponUse.objects.get(registration=badge)
+                coupon = models.CouponUse.objects.get(registration=badge)
                 if coupon.coupon.percent:
                     discount_amount = '%.02f' % ((coupon.coupon.discount / 100) * badge.registration_level.price)
                 else:
@@ -344,11 +344,11 @@ class RegistrationLevelSwagInline(admin.TabularInline):
     def get_convention_from_request(self, request):
         resolved = resolve(request.path_info)
         if 'object_id' in resolved.kwargs:
-            return RegistrationLevel.objects.get(pk=resolved.kwargs['object_id']).convention
+            return models.RegistrationLevel.objects.get(pk=resolved.kwargs['object_id']).convention
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'swag':
-            kwargs['queryset'] = Swag.objects.filter(convention=self.get_convention_from_request(request))
+            kwargs['queryset'] = models.Swag.objects.filter(convention=self.get_convention_from_request(request))
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
