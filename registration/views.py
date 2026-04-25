@@ -2,6 +2,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import View
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.auth.decorators import user_passes_test
@@ -98,11 +99,11 @@ class RegistrationDriver(View):
 
         raise NotImplementedError
 
-    def process_payment(self, request):
+    def process_payment(self, request, amount, description):
         """
         User has confirmed, process payment.
 
-        Currently left as an exercise for the implementer, depending on
+        Currently coded for Stripe, but feel free to override this for
         your payment gateway and whatever code it needs to function.
 
         Return either a string representing whatever payment reference
@@ -112,7 +113,19 @@ class RegistrationDriver(View):
         successful.
         """
 
-        raise NotImplementedError
+        try:
+            stripe_token = request.POST['stripeToken']
+            import stripe
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            charge = stripe.Charge.create(amount=int(amount * 100),
+                                          currency="USD",
+                                          card=stripe_token,
+                                          description=description)
+        except stripe.error.CardError as e:
+            # Pass a "Payment Declined" error to the user
+            raise PaymentError('A payment error has occurred: {}'.format(e.json_body['error']['message']))
+        else:
+            return charge
 
     def success_save_form(self, request, form, amount, charge, **kwargs):
         '''
@@ -187,6 +200,10 @@ class RegistrationDriver(View):
             method.is_credit = False
         context['method'] = method
 
+        # Stripe procedures, replace where needed
+        context['stripe_amount'] = int(amount * 100)
+        context['stripe_publishable_key'] = settings.STRIPE_PUBLISHABLE_KEY
+
         return render(request, self.confirm_template, context)
 
     def step3_success(self, request, form, *args, **kwargs):
@@ -196,7 +213,7 @@ class RegistrationDriver(View):
         context.update(added_context)
 
         try:
-            charge = self.process_payment(request)
+            charge = self.process_payment(request, amount, payment_description)
         except PaymentError as e:
             # Pass a "Payment Declined" error to the user
             form.add_error(None, e.args[0])

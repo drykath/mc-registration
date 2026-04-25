@@ -102,6 +102,14 @@
                     <a class="btn btn-danger" href="javascript:history.back()" role="button">Edit Registration Form</a>
                     {% if method.is_credit %}
                         <!-- TOOD: Redirect/replace payment processor link -->
+                        <script
+                                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                data-key="{{ stripe_publishable_key }}"
+                                data-name="{{ convention.name }}"
+                                data-email="{{ form.data.email }}"
+                                data-description="{{ registration_level }}"
+                                data-amount="{{ stripe_amount }}">
+                        </script>
                     {% else %}
                         <button type="submit" name="submit" class="btn btn-info">Submit Registration</button>
                     {% endif %}
