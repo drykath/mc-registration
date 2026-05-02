@@ -212,14 +212,16 @@ class RegistrationDriver(View):
         context = self.form_context(request, *args, **kwargs)
         context.update(added_context)
 
-        try:
-            charge = self.process_payment(request, amount, payment_description)
-        except PaymentError as e:
-            # Pass a "Payment Declined" error to the user
-            form.add_error(None, e.args[0])
-            request.session.pop('regformdata')
-            return self.step1_form(request, form)
+        charge = None
+        if 'stripeToken' in request.POST.keys():
             # Process Stripe payment
+            try:
+                charge = self.process_payment(request, amount, payment_description)
+            except PaymentError as e:
+                # Pass a "Payment Declined" error to the user
+                form.add_error(None, e.args[0])
+                request.session.pop('regformdata')
+                return self.step1_form(request, form)
 
         context.update(
             # success_save_form should return a dict, add that into context
