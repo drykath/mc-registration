@@ -62,7 +62,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
     def get_convention_from_request(self, request):
         resolved = resolve(request.path_info)
         if 'object_id' in resolved.kwargs:
-            return Registration.all_registrations.get(pk=resolved.kwargs['object_id']).registration_level.convention
+            return self.model.all_registrations.get(pk=resolved.kwargs['object_id']).registration_level.convention
 
     def get_queryset(self, request):
         # Default manager excludes status<>1; show those
@@ -119,7 +119,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
                 if id.registration_level.convention != Convention.objects.current():
                     self.message_user(request, 'Cannot apply payment to reg %s from a different year' % (id))
                     continue
-                payment = Payment(registration=id,
+                payment = models.Payment(registration=id,
                                   payment_method=method,
                                   payment_amount=float(amount),
                                   created_by=request.user)
@@ -196,7 +196,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
             if reprint:
                 badge_number = reg.badge_number()
             if not reprint or not badge_number:
-                badge = BadgeAssignment(registration=reg, printed_by=request.user, registration_level=reg.registration_level)
+                badge = models.BadgeAssignment(registration=reg, printed_by=request.user, registration_level=reg.registration_level)
                 badge.save()
                 badge_number = badge.id
             # Mark the badge as not needing printed any longer
@@ -214,7 +214,7 @@ class RegistrationAdmin(RegistrationModelAdmin):
             transaction.set_autocommit(ac)
 
     def print_badge_list(self, request):
-        badges = models.Registration.objects.filter(checked_in=False).order_by('last_name', 'first_name')
+        badges = self.model.objects.filter(checked_in=False).order_by('last_name', 'first_name')
         split_badges = []
         temp_list = []
         for badge in badges:
